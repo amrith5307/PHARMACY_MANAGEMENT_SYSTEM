@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Expired Medicines</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+
+    <div class="sidebar">
+        <h2>Pharmacy</h2>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="inventory.html">Inventory</a>
+        <a href="purchase.html">Purchase</a>
+        <a href="billing.html">Billing</a>
+        <a href="stock.html">Stock Alert</a>
+        <a href="expired.html" class="active">Expired Medicines</a>
+        <a href="expiring.html">Expiring Soon</a>
+        <a href="sales.html">Sales Report</a>
+        <a href="login.html">Logout</a>
+    </div>
+
+    <div class="main">
+        <div class="topbar"><h1>Expired Medicines</h1></div>
+        <div class="panel">
+            <button onclick="loadExpired()">Refresh</button><br><br>
+            <table border="1" width="100%">
+                <thead>
+                    <tr>
+                        <th>Medicine</th>
+                        <th>Batch</th>
+                        <th>Expiry Date</th>
+                    </tr>
+                </thead>
+                <tbody id="expiredBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+async function loadExpired(){
+    try {
+        let res = await fetch("http://127.0.0.1:5000/expired_medicines");
+        let data = await res.json();
+        let tbody = document.getElementById("expiredBody");
+        tbody.innerHTML = "";
+
+        if(data.length === 0){
+            tbody.innerHTML = `<tr><td colspan="3" style="text-align:center">No expired medicines</td></tr>`;
+            return;
+        }
+
+        data.forEach(m => {
+            let row = document.createElement("tr");
+            row.style.color = "red";
+            row.innerHTML = `
+                <td>${m.name}</td>
+                <td>${m.batch}</td>
+                <td>${m.expiry}</td>
+            `;
+            tbody.appendChild(row);
+        });
+    } catch(err){
+        console.error(err);
+        alert("Error loading expired medicines");
+    }
+}
+window.addEventListener('DOMContentLoaded', loadExpired);
+</script>
+</body>
+</html>

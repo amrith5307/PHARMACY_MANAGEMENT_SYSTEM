@@ -1,0 +1,235 @@
+/* ---------- THEME COLOR ---------- */
+
+:root {
+    --main-purple: #4f46e5;
+    --purple-dark: #3730a3;
+}
+
+
+
+/* ---------- GENERAL ---------- */
+
+body {
+margin: 0;
+font-family: Arial, sans-serif;
+}
+
+/* ---------- LOGIN / SIGNUP ---------- */
+
+.auth-body {
+background: linear-gradient(135deg, var(--main-purple), #1e293b);
+height: 100vh;
+display: flex;
+justify-content: center;
+align-items: center;
+}
+
+.auth-box {
+background: white;
+padding: 30px;
+border-radius: 10px;
+width: 300px;
+text-align: center;
+box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.auth-box h2 {
+margin-bottom: 20px;
+}
+
+.auth-box input {
+width: 100%;
+padding: 10px;
+margin: 8px 0;
+border: 1px solid #ccc;
+border-radius: 6px;
+}
+
+.auth-box button {
+width: 100%;
+padding: 10px;
+background: var(--main-purple);
+color: white;
+border: none;
+border-radius: 6px;
+cursor: pointer;
+margin-top: 10px;
+}
+
+.auth-box button:hover {
+background: var(--purple-dark);
+}
+
+.auth-box a {
+color: var(--main-purple);
+text-decoration: none;
+}
+
+/* ---------- LAYOUT ---------- */
+
+.container {
+display: flex;
+min-height: 100vh;
+}
+
+/* ---------- SIDEBAR ---------- */
+
+.sidebar {
+width: 220px;
+background: var(--main-purple);
+color: white;
+padding: 20px;
+min-height: 100vh;
+position: sticky;
+top: 0;
+transition: width 0.3s;
+}
+
+.sidebar h2 {
+margin-bottom: 30px;
+}
+
+.sidebar a {
+display: block;
+color: white;
+padding: 10px;
+text-decoration: none;
+border-radius: 6px;
+}
+
+.sidebar a:hover {
+background: var(--purple-dark);
+}
+
+/* Collapsed sidebar */
+
+.sidebar.collapsed {
+width: 70px;
+}
+
+.sidebar.collapsed a {
+font-size: 0;
+}
+
+.sidebar.collapsed h2 {
+font-size: 0;
+}
+
+/* ---------- MAIN ---------- */
+
+.main {
+flex: 1;
+padding: 25px;
+background: #f4f6f9;
+}
+
+/* ---------- TOPBAR ---------- */
+
+.topbar {
+display: flex;
+align-items: center;
+gap: 15px;
+margin-bottom: 15px;
+}
+
+.menu-btn {
+font-size: 20px;
+padding: 6px 12px;
+background: var(--main-purple);
+color: white;
+border: none;
+border-radius: 6px;
+cursor: pointer;
+}
+
+/* ---------- CARDS ---------- */
+
+.cards {
+display: flex;
+gap: 20px;
+}
+
+.card {
+flex: 1;
+padding: 20px;
+border-radius: 10px;
+color: white;
+box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.green { background: #22c55e; }
+.blue { background: #3b82f6; }
+.orange { background: #f59e0b; }
+.red { background: #ef4444; }
+
+/* ---------- PANELS ---------- */
+
+.panel {
+margin-top: 25px;
+background: white;
+padding: 20px;
+border-radius: 10px;
+box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* ---------- TABLE ---------- */
+
+table {
+width: 100%;
+border-collapse: collapse;
+table-layout: fixed;
+margin-bottom: 10px;
+background: white;
+}
+
+th, td {
+padding: 8px;
+border-bottom: 1px solid #ddd;
+text-align: left;
+}
+
+th:nth-child(2),
+td:nth-child(2) {
+text-align: center;
+}
+
+/* ---------- BUTTON ---------- */
+
+button {
+background: var(--main-purple);
+color: white;
+border: none;
+padding: 8px 14px;
+border-radius: 6px;
+cursor: pointer;
+margin-bottom: 10px;
+}
+
+button:hover {
+background: var(--purple-dark);
+}
+
+/* ---------- QUICK ACTIONS ---------- */
+
+.quick {
+margin-top: 20px;
+}
+
+.quick button {
+margin-right: 10px;
+}
+.sidebar a,
+.sidebar h2 {
+    font-size: 16px;
+}
+/* Active Sidebar Highlight */
+.sidebar a.active {
+    background: #5a2dff;
+    font-weight: bold;
+}
+
+/* Lock sidebar text size */
+.sidebar a,
+.sidebar h2 {
+    font-size: 16px;
+}

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Purchase - Pharmacy</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <h2>Pharmacy</h2>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="inventory.html">Inventory / Batch</a>
+      <a href="purchase.html" class="active">Purchase</a>
+      <a href="billing.html">Billing</a>
+      <a href="stock.html">Stock Alert</a>
+      <a href="expired.html">Expired Medicines</a>
+      <a href="expiring.html">Expiring Soon</a>
+      <a href="sales.html">Sales Report</a>
+      <a href="login.html">Logout</a>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main">
+
+      <!-- TOP BAR -->
+      <div class="topbar">
+        <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+        <h1>Record Purchase</h1>
+      </div>
+
+      <form id="purchaseForm">
+        <label for="supplierName">Supplier Name</label><br />
+        <input type="text" id="supplierName" name="supplierName" required /><br /><br />
+
+        <label for="supplierPhone">Supplier Phone</label><br />
+        <input type="tel" id="supplierPhone" name="supplierPhone" /><br /><br />
+
+        <label for="supplierAddress">Supplier Address</label><br />
+        <textarea id="supplierAddress" name="supplierAddress" rows="2"></textarea><br /><br />
+
+        <label for="purchaseDate">Purchase Date</label><br />
+        <input type="date" id="purchaseDate" name="purchaseDate" required /><br /><br />
+
+        <h3>Purchase Items</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Medicine Name</th>
+              <th>Batch No</th>
+              <th>Mfg Date</th>
+              <th>Expiry Date</th>
+              <th>Quantity</th>
+              <th>Cost Price (₹)</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="purchaseItemsBody">
+            <!-- Dynamic rows added here -->
+          </tbody>
+        </table>
+
+        <button type="button" id="addPurchaseItemBtn">+ Add Item</button><br /><br />
+
+        <button type="submit">Save Purchase</button>
+      </form>
+
+    </div>
+
+  </div>
+
+  <script>
+    function toggleSidebar() {
+      document.querySelector('.sidebar').classList.toggle('collapsed');
+    }
+
+    const addItemBtn = document.getElementById('addPurchaseItemBtn');
+    const tbody = document.getElementById('purchaseItemsBody');
+
+    addItemBtn.addEventListener('click', () => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><input type="text" name="medicineName" required /></td>
+        <td><input type="text" name="batchNo" required /></td>
+        <td><input type="date" name="mfgDate" required /></td>
+        <td><input type="date" name="expiryDate" required /></td>
+        <td><input type="number" name="quantity" min="1" required /></td>
+        <td><input type="number" name="costPrice" min="0" step="0.01" required /></td>
+        <td><button type="button" onclick="removeRow(this)">Delete</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    function removeRow(button) {
+      button.closest('tr').remove();
+    }
+
+    document.getElementById('purchaseForm').addEventListener('submit', async e => {
+      e.preventDefault();
+
+      const supplierName = document.getElementById('supplierName').value;
+      const supplierPhone = document.getElementById('supplierPhone').value;
+      const supplierAddress = document.getElementById('supplierAddress').value;
+      const purchaseDate = document.getElementById('purchaseDate').value;
+
+      const rows = Array.from(tbody.querySelectorAll('tr'));
+      if(rows.length === 0){
+        alert("Add at least one purchase item!");
+        return;
+      }
+
+      try {
+        for(let row of rows){
+          const medName = row.querySelector('input[name="medicineName"]').value;
+          const batch = row.querySelector('input[name="batchNo"]').value;
+          const mfg = row.querySelector('input[name="mfgDate"]').value;
+          const expiry = row.querySelector('input[name="expiryDate"]').value;
+          const qty = row.querySelector('input[name="quantity"]').value;
+          const price = row.querySelector('input[name="costPrice"]').value;
+
+          await fetch("http://127.0.0.1:5000/purchase_medicine", {
+            method: "POST",
+            headers: {"Content-Type":"application/json"},
+            body: JSON.stringify({
+              name: medName,
+              batch: batch,
+              mfg: mfg,
+              expiry: expiry,
+              quantity: qty,
+              price: price,
+              supplierName,
+              supplierPhone,
+              supplierAddress,
+              purchaseDate
+            })
+          });
+        }
+
+        alert("Purchase saved successfully!");
+        e.target.reset();
+        tbody.innerHTML = '';
+
+      } catch(err){
+        console.error(err);
+        alert("Error saving purchase.");
+      }
+    });
+  </script>
+</body>
+</html>

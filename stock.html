@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Stock Alert - Pharmacy</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <h2>Pharmacy</h2>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="inventory.html">Inventory</a>
+        <a href="purchase.html">Purchase</a>
+        <a href="billing.html">Billing</a>
+        <a href="stock.html" class="active">Stock Alert</a>
+        <a href="expired.html">Expired Medicines</a>
+        <a href="expiring.html">Expiring Soon</a>
+        <a href="sales.html">Sales Report</a>
+        <a href="login.html">Logout</a>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main">
+        <div class="topbar">
+            <h1>Low Stock Alert</h1>
+        </div>
+
+        <div class="panel">
+            <button onclick="loadLowStock()">Refresh</button>
+            <br><br>
+
+            <table border="1" width="100%" id="lowStockTable">
+                <thead>
+                    <tr>
+                        <th>Medicine</th>
+                        <th>Batch</th>
+                        <th>Quantity</th>
+                    </tr>
+                </thead>
+                <tbody id="lowStockBody">
+                    <!-- Low stock medicines will appear here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<script>
+// Fetch low stock medicines from Flask
+async function loadLowStock(){
+    try {
+        let res = await fetch("http://127.0.0.1:5000/low_stock");
+        let data = await res.json();
+
+        let tbody = document.getElementById("lowStockBody");
+        tbody.innerHTML = "";
+
+        if(data.length === 0){
+            tbody.innerHTML = `<tr><td colspan="3" style="text-align:center">All medicines sufficiently stocked</td></tr>`;
+            return;
+        }
+
+        data.forEach(m => {
+            let row = document.createElement("tr");
+            row.style.color = "red"; // Highlight low stock
+            row.innerHTML = `
+                <td>${m.name}</td>
+                <td>${m.batch}</td>
+                <td>${m.quantity}</td>
+            `;
+            tbody.appendChild(row);
+        });
+
+    } catch(err){
+        console.error("Error fetching low stock:", err);
+        alert("Could not load low stock medicines. Check server.");
+    }
+}
+
+// Auto-load when page opens
+window.addEventListener('DOMContentLoaded', loadLowStock);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sales Report - Pharmacy</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+
+    <div class="sidebar">
+      <h2>Pharmacy</h2>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="inventory.html">Inventory / Batch</a>
+      <a href="purchase.html">Purchase</a>
+      <a href="billing.html">Billing</a>
+      <a href="stock.html">Stock Alert</a>
+      <a href="expired.html">Expired Medicines</a>
+      <a href="expiring.html">Expiring Soon</a>
+      <a href="sales.html" class="active">Sales Report</a>
+      <a href="login.html">Logout</a>
+    </div>
+
+    <div class="main">
+
+      <div class="topbar">
+        <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+        <h1>Sales Report</h1>
+      </div>
+
+      <div style="margin-top:15px;">
+        <label for="fromDate">From Date:</label>
+        <input type="date" id="fromDate" name="fromDate" />
+        <label for="toDate">To Date:</label>
+        <input type="date" id="toDate" name="toDate" />
+        <button onclick="filterSales()">Filter</button>
+        <button onclick="loadSales()">Refresh</button>
+      </div>
+
+      <table id="salesTable" style="margin-top:15px; width:100%; border-collapse: collapse;">
+        <thead>
+          <tr>
+            <th>Bill ID</th>
+            <th>Date</th>
+            <th>Total Amount (₹)</th>
+            <th>Items</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <h3>Total Sales: ₹<span id="totalSales">0.00</span></h3>
+
+    </div>
+
+  </div>
+
+  <script>
+    function toggleSidebar() {
+      document.querySelector('.sidebar').classList.toggle('collapsed');
+    }
+
+    async function loadSales() {
+      const res = await fetch('http://127.0.0.1:5000/sales_report');
+      const data = await res.json();
+
+      const tbody = document.querySelector('#salesTable tbody');
+      tbody.innerHTML = '';
+
+      let total = 0;
+      data.all_sales.forEach((sale, index) => {
+        total += sale.total;
+
+        // List items as name(qty)
+        const itemsList = sale.items.map(i => `${i.name}(${i.quantity})`).join(', ');
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${index + 1}</td>
+          <td>${sale.date}</td>
+          <td>${sale.total.toFixed(2)}</td>
+          <td>${itemsList}</td>
+        `;
+        tbody.appendChild(row);
+      });
+
+      document.getElementById('totalSales').innerText = total.toFixed(2);
+    }
+
+    function filterSales() {
+      const from = document.getElementById('fromDate').value;
+      const to = document.getElementById('toDate').value;
+
+      if (!from || !to) {
+        alert('Select both From and To dates!');
+        return;
+      }
+
+      const tbody = document.querySelector('#salesTable tbody');
+      const rows = Array.from(tbody.querySelectorAll('tr'));
+
+      rows.forEach(row => {
+        const date = row.cells[1].innerText;
+        if (date >= from && date <= to) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+
+      // Update total for filtered rows
+      let total = 0;
+      rows.forEach(row => {
+        if (row.style.display !== 'none') {
+          total += parseFloat(row.cells[2].innerText);
+        }
+      });
+      document.getElementById('totalSales').innerText = total.toFixed(2);
+    }
+
+    // Auto load sales on page load
+    loadSales();
+  </script>
+</body>
+</html>

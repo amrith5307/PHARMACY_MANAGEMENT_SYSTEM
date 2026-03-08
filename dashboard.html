@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Dashboard - Pharmacy</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <h2>Pharmacy</h2>
+
+        <a href="dashboard.html" class="active">Dashboard</a>
+        <a href="inventory.html">Inventory / Batch</a>
+        <a href="purchase.html">Purchase</a>
+        <a href="billing.html">Billing</a>
+        <a href="stock.html">Stock Alert</a>
+        <a href="expired.html">Expired Medicines</a>
+        <a href="expiring.html">Expiring Soon</a>
+        <a href="sales.html">Sales Report</a>
+        <a href="login.html">Logout</a>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main">
+
+        <!-- TOP BAR -->
+        <div class="topbar">
+            <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+            <h1>Dashboard</h1>
+        </div>
+
+        <!-- SUMMARY CARDS -->
+        <div class="cards">
+            <div class="card green">
+                <h3>₹ 12,500</h3>
+                <p>Today Sales</p>
+            </div>
+
+            <div class="card blue">
+                <h3>120</h3>
+                <p>Total Medicines</p>
+            </div>
+
+            <div class="card orange">
+                <h3>8</h3>
+                <p>Low Stock</p>
+            </div>
+
+            <div class="card red">
+                <h3>3</h3>
+                <p>Expired</p>
+            </div>
+        </div>
+
+        <!-- STOCK ALERT PANEL -->
+        <div class="panel">
+            <h2>Stock Alerts</h2>
+
+            <h3>Low Stock</h3>
+            <table>
+                <tr>
+                    <th>Medicine</th>
+                    <th>Qty</th>
+                </tr>
+                <tr>
+                    <td>Paracetamol</td>
+                    <td>5</td>
+                </tr>
+                <tr>
+                    <td>Amoxicillin</td>
+                    <td>3</td>
+                </tr>
+            </table>
+
+            <button onclick="location.href='stock.html'">View All</button>
+
+            <h3>Expired Medicines</h3>
+            <table>
+                <tr>
+                    <th>Medicine</th>
+                    <th>Expiry</th>
+                </tr>
+                <tr>
+                    <td>Ibuprofen</td>
+                    <td>Jan 2024</td>
+                </tr>
+            </table>
+
+            <button onclick="location.href='expired.html'">View All</button>
+        </div>
+
+        <!-- QUICK ACTION BUTTONS -->
+        <div class="quick">
+            <button onclick="location.href='inventory.html'">Add Medicine</button>
+            <button onclick="location.href='billing.html'">New Bill</button>
+            <button onclick="location.href='purchase.html'">Add Purchase</button>
+            <button onclick="location.href='sales.html'">Sales Report</button>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+function toggleSidebar() {
+    document.querySelector(".sidebar").classList.toggle("collapsed");
+}
+</script>
+
+</body>
+</html>

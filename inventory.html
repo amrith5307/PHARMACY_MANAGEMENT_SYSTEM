@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<title>Inventory - Pharmacy</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+<div class="container">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <h2>Pharmacy</h2>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="inventory.html" class="active">Inventory</a>
+        <a href="purchase.html">Purchase</a>
+        <a href="billing.html">Billing</a>
+        <a href="stock.html">Stock Alert</a>
+        <a href="expired.html">Expired Medicines</a>
+        <a href="expiring.html">Expiring Soon</a>
+        <a href="sales.html">Sales Report</a>
+        <a href="login.html">Logout</a>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main">
+
+        <div class="topbar">
+            <h1>Inventory</h1>
+        </div>
+
+        <div class="panel">
+
+            <!-- Search + Add Medicine -->
+            <div style="display:flex; gap:10px; align-items:center; margin-bottom:10px;">
+                <input type="text" id="searchInput" placeholder="Search medicine..." onkeyup="searchMedicine()" style="padding:6px; width:200px;">
+                <button onclick="toggleAddForm()">+ Add Medicine</button>
+            </div>
+
+            <!-- Add Medicine Form -->
+            <div id="addForm" style="display:none; margin-bottom:15px; padding:10px; border:1px solid #ddd; border-radius:6px; background:#f9f9f9;">
+                <input type="text" id="medName" placeholder="Medicine Name" style="padding:6px; margin-right:6px;">
+                <input type="text" id="medBatch" placeholder="Batch Number" style="padding:6px; margin-right:6px;">
+                <input type="date" id="medMfg" style="padding:6px; margin-right:6px;">
+                <input type="date" id="medExpiry" style="padding:6px; margin-right:6px;">
+                <input type="number" id="medQty" placeholder="Quantity" style="padding:6px; margin-right:6px; width:80px;">
+                <input type="number" id="medPrice" placeholder="Price" style="padding:6px; margin-right:6px; width:80px;">
+                <select id="medPrescription" style="padding:6px; margin-right:6px;">
+                    <option value="No">No Prescription</option>
+                    <option value="Yes">Prescription Required</option>
+                </select>
+                <button onclick="addMedicineForm()">Add</button>
+                <button onclick="toggleAddForm()">Cancel</button>
+            </div>
+
+            <!-- Edit Medicine Form -->
+            <div id="editForm" style="display:none; margin-bottom:15px; padding:10px; border:1px solid #ddd; border-radius:6px; background:#f9f9f9;">
+                <input type="text" id="editBatch" disabled style="padding:6px; margin-right:6px;">
+                <input type="number" id="editQty" placeholder="Quantity" style="padding:6px; margin-right:6px; width:80px;">
+                <input type="number" id="editPrice" placeholder="Price" style="padding:6px; margin-right:6px; width:80px;">
+                <input type="date" id="editExpiry" style="padding:6px; margin-right:6px;">
+                <button onclick="saveEdit()">Save</button>
+                <button onclick="toggleEditForm()">Cancel</button>
+            </div>
+
+            <!-- Inventory Table -->
+            <table border="1" width="100%" id="inventoryTable">
+                <thead>
+                    <tr>
+                        <th>Medicine</th>
+                        <th>Batch</th>
+                        <th>Mfg</th>
+                        <th>Expiry</th>
+                        <th>Quantity</th>
+                        <th>Price</th>
+                        <th>Prescription</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="inventoryBody"></tbody>
+            </table>
+
+        </div>
+
+    </div>
+</div>
+
+<script>
+console.log("Inventory page loaded")
+
+/* --------- TOGGLE ADD FORM --------- */
+function toggleAddForm(){
+    let form = document.getElementById("addForm")
+    form.style.display = (form.style.display === "none") ? "block" : "none"
+}
+
+/* --------- TOGGLE EDIT FORM --------- */
+function toggleEditForm(){
+    let form = document.getElementById("editForm")
+    form.style.display = (form.style.display === "none") ? "block" : "none"
+}
+
+/* --------- LOAD MEDICINES --------- */
+async function loadMedicines(){
+    let response = await fetch("http://127.0.0.1:5000/medicines")
+    let medicines = await response.json()
+    let body = document.getElementById("inventoryBody")
+    body.innerHTML = ""
+
+    medicines.forEach(function(m){
+        if(!m.name) return
+        let row = `
+        <tr>
+            <td>${m.name}</td>
+            <td>${m.batch}</td>
+            <td>${m.mfg}</td>
+            <td>${m.expiry}</td>
+            <td>${m.quantity}</td>
+            <td>${m.price}</td>
+            <td>${m.prescription}</td>
+            <td>
+                <button onclick="editMedicine('${m.batch}','${m.quantity}','${m.price}','${m.expiry}')">Edit</button>
+                <button onclick="deleteMedicine('${m.batch}')">Delete</button>
+            </td>
+        </tr>
+        `
+        body.innerHTML += row
+    })
+}
+
+/* --------- ADD MEDICINE --------- */
+function addMedicineForm(){
+    let name = document.getElementById("medName").value
+    let batch = document.getElementById("medBatch").value
+    let mfg = document.getElementById("medMfg").value
+    let expiry = document.getElementById("medExpiry").value
+    let qty = document.getElementById("medQty").value
+    let price = document.getElementById("medPrice").value
+    let prescription = document.getElementById("medPrescription").value
+
+    if(!name || !batch || !mfg || !expiry || !qty || !price){
+        alert("Please fill all fields")
+        return
+    }
+
+    fetch("http://127.0.0.1:5000/add_medicine",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({name, batch, mfg, expiry, quantity:qty, price, prescription})
+    })
+    .then(res=>res.json())
+    .then(data=>{
+        alert("Medicine Added")
+        loadMedicines()
+        toggleAddForm()
+        document.getElementById("medName").value=""
+        document.getElementById("medBatch").value=""
+        document.getElementById("medMfg").value=""
+        document.getElementById("medExpiry").value=""
+        document.getElementById("medQty").value=""
+        document.getElementById("medPrice").value=""
+        document.getElementById("medPrescription").value="No"
+    })
+}
+
+/* --------- DELETE MEDICINE --------- */
+function deleteMedicine(batch){
+    fetch("http://127.0.0.1:5000/delete_medicine/"+batch,{method:"DELETE"})
+    .then(res=>res.json())
+    .then(data=>{
+        alert("Medicine Deleted")
+        loadMedicines()
+    })
+}
+
+/* --------- EDIT MEDICINE --------- */
+function editMedicine(batch, qty, price, expiry){
+    toggleEditForm()
+    document.getElementById("editBatch").value = batch
+    document.getElementById("editQty").value = qty
+    document.getElementById("editPrice").value = price
+    document.getElementById("editExpiry").value = expiry
+}
+
+function saveEdit(){
+    let batch = document.getElementById("editBatch").value
+    let qty = document.getElementById("editQty").value
+    let price = document.getElementById("editPrice").value
+    let expiry = document.getElementById("editExpiry").value
+
+    if(!qty || !price || !expiry){
+        alert("Please fill all fields")
+        return
+    }
+
+    fetch("http://127.0.0.1:5000/edit_medicine/"+batch,{
+        method:"PUT",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({quantity: qty, price: price, expiry: expiry})
+    })
+    .then(res=>res.json())
+    .then(data=>{
+        alert("Medicine updated")
+        loadMedicines()
+        toggleEditForm()
+    })
+}
+
+/* --------- SEARCH MEDICINE --------- */
+function searchMedicine(){
+    let input = document.getElementById("searchInput").value.toLowerCase()
+    let rows = document.getElementById("inventoryBody").getElementsByTagName("tr")
+    for(let i=0;i<rows.length;i++){
+        let cells = rows[i].getElementsByTagName("td")
+        let match = false
+        for(let j=0;j<cells.length-1;j++){
+            if(cells[j].innerText.toLowerCase().includes(input)){
+                match = true
+                break
+            }
+        }
+        rows[i].style.display = match ? "" : "none"
+    }
+}
+
+/* AUTO LOAD on page open */
+window.addEventListener('DOMContentLoaded', loadMedicines);
+</script>
+
+</body>
+</html>

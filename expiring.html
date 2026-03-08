@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Expiring Soon Medicines</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+
+    <div class="sidebar">
+        <h2>Pharmacy</h2>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="inventory.html">Inventory</a>
+        <a href="purchase.html">Purchase</a>
+        <a href="billing.html">Billing</a>
+        <a href="stock.html">Stock Alert</a>
+        <a href="expired.html">Expired Medicines</a>
+        <a href="expiring.html" class="active">Expiring Soon</a>
+        <a href="sales.html">Sales Report</a>
+        <a href="login.html">Logout</a>
+    </div>
+
+    <div class="main">
+        <div class="topbar"><h1>Expiring Soon (Next 30 days)</h1></div>
+        <div class="panel">
+            <button onclick="loadExpiring()">Refresh</button><br><br>
+            <table border="1" width="100%">
+                <thead>
+                    <tr>
+                        <th>Medicine</th>
+                        <th>Batch</th>
+                        <th>Expiry Date</th>
+                    </tr>
+                </thead>
+                <tbody id="expiringBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+async function loadExpiring(){
+    try {
+        let res = await fetch("http://127.0.0.1:5000/expiring_medicines");
+        let data = await res.json();
+        let tbody = document.getElementById("expiringBody");
+        tbody.innerHTML = "";
+
+        if(data.length === 0){
+            tbody.innerHTML = `<tr><td colspan="3" style="text-align:center">No medicines expiring soon</td></tr>`;
+            return;
+        }
+
+        data.forEach(m => {
+            let row = document.createElement("tr");
+            row.style.color = "orange";
+            row.innerHTML = `
+                <td>${m.name}</td>
+                <td>${m.batch}</td>
+                <td>${m.expiry}</td>
+            `;
+            tbody.appendChild(row);
+        });
+    } catch(err){
+        console.error(err);
+        alert("Error loading expiring medicines");
+    }
+}
+window.addEventListener('DOMContentLoaded', loadExpiring);
+</script>
+</body>
+</html>
