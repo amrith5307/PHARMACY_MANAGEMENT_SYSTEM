@@ -32,18 +32,6 @@
       </div>
 
       <form id="purchaseForm">
-        <label for="supplierName">Supplier Name</label><br />
-        <input type="text" id="supplierName" name="supplierName" required /><br /><br />
-
-        <label for="supplierPhone">Supplier Phone</label><br />
-        <input type="tel" id="supplierPhone" name="supplierPhone" /><br /><br />
-
-        <label for="supplierAddress">Supplier Address</label><br />
-        <textarea id="supplierAddress" name="supplierAddress" rows="2"></textarea><br /><br />
-
-        <label for="purchaseDate">Purchase Date</label><br />
-        <input type="date" id="purchaseDate" name="purchaseDate" required /><br /><br />
-
         <h3>Purchase Items</h3>
         <table>
           <thead>
@@ -58,12 +46,10 @@
             </tr>
           </thead>
           <tbody id="purchaseItemsBody">
-            <!-- Dynamic rows added here -->
           </tbody>
         </table>
 
         <button type="button" id="addPurchaseItemBtn">+ Add Item</button><br /><br />
-
         <button type="submit">Save Purchase</button>
       </form>
 
@@ -86,8 +72,8 @@
         <td><input type="text" name="batchNo" required /></td>
         <td><input type="date" name="mfgDate" required /></td>
         <td><input type="date" name="expiryDate" required /></td>
-        <td><input type="number" name="quantity" min="1" required /></td>
-        <td><input type="number" name="costPrice" min="0" step="0.01" required /></td>
+        <td><input type="number" name="quantity" min="1" value="1" required /></td>
+        <td><input type="number" name="costPrice" min="0" step="0.01" value="0" required /></td>
         <td><button type="button" onclick="removeRow(this)">Delete</button></td>
       `;
       tbody.appendChild(tr);
@@ -100,48 +86,33 @@
     document.getElementById('purchaseForm').addEventListener('submit', async e => {
       e.preventDefault();
 
-      const supplierName = document.getElementById('supplierName').value;
-      const supplierPhone = document.getElementById('supplierPhone').value;
-      const supplierAddress = document.getElementById('supplierAddress').value;
-      const purchaseDate = document.getElementById('purchaseDate').value;
-
       const rows = Array.from(tbody.querySelectorAll('tr'));
       if(rows.length === 0){
         alert("Add at least one purchase item!");
         return;
       }
 
+      const items = rows.map(row => ({
+        name: row.querySelector('input[name="medicineName"]').value,
+        batch: row.querySelector('input[name="batchNo"]').value,
+        mfg: row.querySelector('input[name="mfgDate"]').value,
+        expiry: row.querySelector('input[name="expiryDate"]').value,
+        quantity: row.querySelector('input[name="quantity"]').value,
+        costPrice: row.querySelector('input[name="costPrice"]').value,
+        prescription: "No"  // you can add a prescription column if needed
+      }));
+
       try {
-        for(let row of rows){
-          const medName = row.querySelector('input[name="medicineName"]').value;
-          const batch = row.querySelector('input[name="batchNo"]').value;
-          const mfg = row.querySelector('input[name="mfgDate"]').value;
-          const expiry = row.querySelector('input[name="expiryDate"]').value;
-          const qty = row.querySelector('input[name="quantity"]').value;
-          const price = row.querySelector('input[name="costPrice"]').value;
+        const res = await fetch("http://127.0.0.1:5000/purchase", {
+          method: "POST",
+          headers: {"Content-Type":"application/json"},
+          body: JSON.stringify({items})
+        });
 
-          await fetch("http://127.0.0.1:5000/purchase_medicine", {
-            method: "POST",
-            headers: {"Content-Type":"application/json"},
-            body: JSON.stringify({
-              name: medName,
-              batch: batch,
-              mfg: mfg,
-              expiry: expiry,
-              quantity: qty,
-              price: price,
-              supplierName,
-              supplierPhone,
-              supplierAddress,
-              purchaseDate
-            })
-          });
-        }
+        const data = await res.json();
+        alert(data.message);
 
-        alert("Purchase saved successfully!");
-        e.target.reset();
         tbody.innerHTML = '';
-
       } catch(err){
         console.error(err);
         alert("Error saving purchase.");

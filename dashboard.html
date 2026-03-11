@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <title>Dashboard - Pharmacy</title>
 <link rel="stylesheet" href="style.css">
-</head>
+</head>  
 
 <body>
 
@@ -37,22 +37,22 @@
         <!-- SUMMARY CARDS -->
         <div class="cards">
             <div class="card green">
-                <h3>₹ 12,500</h3>
+                <h3 id="todaySales">₹ 0</h3>
                 <p>Today Sales</p>
             </div>
 
             <div class="card blue">
-                <h3>120</h3>
+                <h3 id="totalMedicines">0</h3>
                 <p>Total Medicines</p>
             </div>
 
             <div class="card orange">
-                <h3>8</h3>
+                <h3 id="lowStockCount">0</h3>
                 <p>Low Stock</p>
             </div>
 
             <div class="card red">
-                <h3>3</h3>
+                <h3 id="expiredCount">0</h3>
                 <p>Expired</p>
             </div>
         </div>
@@ -62,33 +62,23 @@
             <h2>Stock Alerts</h2>
 
             <h3>Low Stock</h3>
-            <table>
+            <table id="lowStockTable">
                 <tr>
                     <th>Medicine</th>
                     <th>Qty</th>
                 </tr>
-                <tr>
-                    <td>Paracetamol</td>
-                    <td>5</td>
-                </tr>
-                <tr>
-                    <td>Amoxicillin</td>
-                    <td>3</td>
-                </tr>
+                <!-- Populated dynamically -->
             </table>
 
             <button onclick="location.href='stock.html'">View All</button>
 
             <h3>Expired Medicines</h3>
-            <table>
+            <table id="expiredTable">
                 <tr>
                     <th>Medicine</th>
                     <th>Expiry</th>
                 </tr>
-                <tr>
-                    <td>Ibuprofen</td>
-                    <td>Jan 2024</td>
-                </tr>
+                <!-- Populated dynamically -->
             </table>
 
             <button onclick="location.href='expired.html'">View All</button>
@@ -110,6 +100,50 @@
 function toggleSidebar() {
     document.querySelector(".sidebar").classList.toggle("collapsed");
 }
+
+// Fetch data from backend and populate dashboard
+async function loadDashboard() {
+    try {
+        // Fetch medicines for counts and stock alerts
+        const medRes = await fetch("http://127.0.0.1:5000/medicines");
+        const medicines = await medRes.json();
+
+        const totalMedicines = medicines.length;
+        const lowStock = medicines.filter(m => m.quantity < 10);
+        const expired = medicines.filter(m => new Date(m.expiry) < new Date());
+
+        document.getElementById("totalMedicines").innerText = totalMedicines;
+        document.getElementById("lowStockCount").innerText = lowStock.length;
+        document.getElementById("expiredCount").innerText = expired.length;
+
+        const lowTable = document.getElementById("lowStockTable");
+        lowStock.forEach(m => {
+            const row = document.createElement("tr");
+            row.innerHTML = `<td>${m.name}</td><td>${m.quantity}</td>`;
+            lowTable.appendChild(row);
+        });
+
+        const expiredTable = document.getElementById("expiredTable");
+        expired.forEach(m => {
+            const row = document.createElement("tr");
+            const expDate = new Date(m.expiry).toLocaleDateString();
+            row.innerHTML = `<td>${m.name}</td><td>${expDate}</td>`;
+            expiredTable.appendChild(row);
+        });
+
+        // Fetch sales for today
+        const salesRes = await fetch("http://127.0.0.1:5000/sales_report");
+        const salesData = await salesRes.json();
+        const todaySales = salesData.daily_sales || 0;
+        document.getElementById("todaySales").innerText = `₹ ${todaySales}`;
+
+    } catch(err) {
+        console.error("Error loading dashboard:", err);
+    }
+}
+
+// Call load on page load
+window.onload = loadDashboard;
 </script>
 
 </body>

@@ -2,27 +2,63 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Signup - Pharmacy</title>
+<title>SIGN UP</title>
 <link rel="stylesheet" href="style.css">
 </head>
 
 <body class="auth-body">
 
 <div class="auth-box">
-    <h2>Create Account</h2>
+    <h2>SIGN UP</h2>
 
-    <input type="text" placeholder="Full Name">
-    <input type="text" placeholder="Username">
-    <input type="password" placeholder="Password">
-    <input type="password" placeholder="Confirm Password">
+    <input type="text" id="username" placeholder="Username" required>
+    <input type="password" id="password" placeholder="Password" required>
+    <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
 
-    <button onclick="location.href='login.html'">Create Account</button>
-
+    <button id="signupBtn">Sign Up</button>
 
     <p>Already have an account?
         <a href="login.html">Login</a>
     </p>
 </div>
+
+<script>
+document.getElementById('signupBtn').addEventListener('click', async () => {
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+
+    if (!username || !password) {
+        alert("Fill all fields!");
+        return;
+    }
+
+    if (password !== confirmPassword) {
+        alert("Passwords do not match!");
+        return;
+    }
+
+    try {
+        const res = await fetch("http://127.0.0.1:5000/signup", {
+            method: "POST",
+            headers: {"Content-Type":"application/json"},
+            body: JSON.stringify({username, password})
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+            alert("Signup successful! Please login.");
+            window.location.href = "login.html";
+        } else {
+            alert(data.error || "Signup failed!");
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Error connecting to server.");
+    }
+});
+</script>
 
 </body>
 </html>

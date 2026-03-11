@@ -5,8 +5,6 @@
     --purple-dark: #3730a3;
 }
 
-
-
 /* ---------- GENERAL ---------- */
 
 body {
@@ -115,6 +113,13 @@ font-size: 0;
 font-size: 0;
 }
 
+/* Active sidebar */
+
+.sidebar a.active {
+background: #5a2dff;
+font-weight: bold;
+}
+
 /* ---------- MAIN ---------- */
 
 .main {
@@ -180,6 +185,8 @@ border-collapse: collapse;
 table-layout: fixed;
 margin-bottom: 10px;
 background: white;
+overflow: visible;
+position: relative;
 }
 
 th, td {
@@ -218,18 +225,34 @@ margin-top: 20px;
 .quick button {
 margin-right: 10px;
 }
+
+/* ---------- SIDEBAR TEXT LOCK ---------- */
+
 .sidebar a,
 .sidebar h2 {
-    font-size: 16px;
-}
-/* Active Sidebar Highlight */
-.sidebar a.active {
-    background: #5a2dff;
-    font-weight: bold;
+font-size: 16px;
 }
 
-/* Lock sidebar text size */
-.sidebar a,
-.sidebar h2 {
-    font-size: 16px;
+/* ---------- TOM SELECT FIX ---------- */
+
+.ts-wrapper {
+position: relative;
+z-index: 2000;
+}
+
+.ts-control {
+z-index: 2000;
+}
+
+.ts-dropdown {
+z-index: 9999 !important;
+position: absolute;
+}
+
+/* prevent clipping inside containers */
+
+.main,
+.panel,
+.container {
+overflow: visible;
 }

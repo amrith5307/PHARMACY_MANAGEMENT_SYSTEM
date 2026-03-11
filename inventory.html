@@ -89,7 +89,11 @@
 
 <script>
 console.log("Inventory page loaded")
-
+function formatDate(dateStr){
+    if(!dateStr) return "";
+    let d = new Date(dateStr);
+    return d.toISOString().split("T")[0];
+}
 /* --------- TOGGLE ADD FORM --------- */
 function toggleAddForm(){
     let form = document.getElementById("addForm")
@@ -115,8 +119,8 @@ async function loadMedicines(){
         <tr>
             <td>${m.name}</td>
             <td>${m.batch}</td>
-            <td>${m.mfg}</td>
-            <td>${m.expiry}</td>
+            <td>${formatDate(m.mfg)}</td>
+            <td>${formatDate(m.expiry)}</td>
             <td>${m.quantity}</td>
             <td>${m.price}</td>
             <td>${m.prescription}</td>
@@ -181,7 +185,7 @@ function editMedicine(batch, qty, price, expiry){
     document.getElementById("editBatch").value = batch
     document.getElementById("editQty").value = qty
     document.getElementById("editPrice").value = price
-    document.getElementById("editExpiry").value = expiry
+    document.getElementById("editExpiry").value = formatDate(expiry)
 }
 
 function saveEdit(){

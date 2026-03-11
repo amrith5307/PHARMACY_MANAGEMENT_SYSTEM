@@ -1,125 +1,254 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
+
 <head>
-  <meta charset="UTF-8" />
-  <title>Sales Report - Pharmacy</title>
-  <link rel="stylesheet" href="style.css" />
+
+<title>Sales Report</title>
+<link rel="stylesheet" href="style.css">
+
+<style>
+
+.summary{
+display:flex;
+gap:20px;
+margin-bottom:30px;
+}
+
+.card{
+flex:1;
+padding:20px;
+border-radius:10px;
+color:white;
+font-weight:bold;
+text-align:center;
+}
+
+.daily{background:#4CAF50;}
+.monthly{background:#2196F3;}
+.total{background:#ff9800;}
+
+.card h2{
+margin-top:10px;
+font-size:28px;
+}
+
+.viewBtn{
+background:#333;
+color:white;
+border:none;
+padding:6px 12px;
+cursor:pointer;
+border-radius:4px;
+}
+
+.viewBtn:hover{
+background:#555;
+}
+
+.detailsRow{
+display:none;
+background:#f9f9f9;
+}
+
+.detailsTable{
+width:100%;
+border-collapse:collapse;
+margin-top:10px;
+}
+
+.detailsTable th{
+background:#333;
+color:white;
+padding:6px;
+}
+
+.detailsTable td{
+padding:6px;
+border:1px solid #ddd;
+text-align:center;
+}
+
+</style>
+
 </head>
+
 <body>
-  <div class="container">
 
-    <div class="sidebar">
-      <h2>Pharmacy</h2>
-      <a href="dashboard.html">Dashboard</a>
-      <a href="inventory.html">Inventory / Batch</a>
-      <a href="purchase.html">Purchase</a>
-      <a href="billing.html">Billing</a>
-      <a href="stock.html">Stock Alert</a>
-      <a href="expired.html">Expired Medicines</a>
-      <a href="expiring.html">Expiring Soon</a>
-      <a href="sales.html" class="active">Sales Report</a>
-      <a href="login.html">Logout</a>
-    </div>
+<div class="container">
 
-    <div class="main">
+<div class="sidebar">
+<h2>Pharmacy</h2>
+<a href="dashboard.html">Dashboard</a>
+<a href="inventory.html">Inventory / Batch</a>
+<a href="purchase.html">Purchase</a>
+<a href="billing.html">Billing</a>
+<a href="stock.html">Stock Alert</a>
+<a href="expired.html">Expired Medicines</a>
+<a href="expiring.html">Expiring Soon</a>
+<a href="sales.html">Sales Report</a>
+<a href="login.html">Logout</a>
+</div>
 
-      <div class="topbar">
-        <button class="menu-btn" onclick="toggleSidebar()">☰</button>
-        <h1>Sales Report</h1>
-      </div>
 
-      <div style="margin-top:15px;">
-        <label for="fromDate">From Date:</label>
-        <input type="date" id="fromDate" name="fromDate" />
-        <label for="toDate">To Date:</label>
-        <input type="date" id="toDate" name="toDate" />
-        <button onclick="filterSales()">Filter</button>
-        <button onclick="loadSales()">Refresh</button>
-      </div>
+<div class="main">
 
-      <table id="salesTable" style="margin-top:15px; width:100%; border-collapse: collapse;">
-        <thead>
-          <tr>
-            <th>Bill ID</th>
-            <th>Date</th>
-            <th>Total Amount (₹)</th>
-            <th>Items</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+<h1>Sales Report</h1>
 
-      <h3>Total Sales: ₹<span id="totalSales">0.00</span></h3>
+<h2>Sales Summary</h2>
 
-    </div>
+<div class="summary">
 
-  </div>
+<div class="card daily">
+<h3>Today's Sales</h3>
+<h2 id="dailySales">₹0</h2>
+</div>
 
-  <script>
-    function toggleSidebar() {
-      document.querySelector('.sidebar').classList.toggle('collapsed');
-    }
+<div class="card monthly">
+<h3>Monthly Sales</h3>
+<h2 id="monthlySales">₹0</h2>
+</div>
 
-    async function loadSales() {
-      const res = await fetch('http://127.0.0.1:5000/sales_report');
-      const data = await res.json();
+<div class="card total">
+<h3>Total Revenue</h3>
+<h2 id="totalRevenue">₹0</h2>
+</div>
 
-      const tbody = document.querySelector('#salesTable tbody');
-      tbody.innerHTML = '';
+</div>
 
-      let total = 0;
-      data.all_sales.forEach((sale, index) => {
-        total += sale.total;
+<h2>All Bills</h2>
 
-        // List items as name(qty)
-        const itemsList = sale.items.map(i => `${i.name}(${i.quantity})`).join(', ');
+<table border="1" width="100%">
 
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${index + 1}</td>
-          <td>${sale.date}</td>
-          <td>${sale.total.toFixed(2)}</td>
-          <td>${itemsList}</td>
-        `;
-        tbody.appendChild(row);
-      });
+<thead>
+<tr>
+<th>Sale ID</th>
+<th>Date</th>
+<th>Total Amount</th>
+<th>Details</th>
+</tr>
+</thead>
 
-      document.getElementById('totalSales').innerText = total.toFixed(2);
-    }
+<tbody id="salesTable"></tbody>
 
-    function filterSales() {
-      const from = document.getElementById('fromDate').value;
-      const to = document.getElementById('toDate').value;
+</table>
 
-      if (!from || !to) {
-        alert('Select both From and To dates!');
-        return;
-      }
+</div>
 
-      const tbody = document.querySelector('#salesTable tbody');
-      const rows = Array.from(tbody.querySelectorAll('tr'));
+</div>
 
-      rows.forEach(row => {
-        const date = row.cells[1].innerText;
-        if (date >= from && date <= to) {
-          row.style.display = '';
-        } else {
-          row.style.display = 'none';
-        }
-      });
 
-      // Update total for filtered rows
-      let total = 0;
-      rows.forEach(row => {
-        if (row.style.display !== 'none') {
-          total += parseFloat(row.cells[2].innerText);
-        }
-      });
-      document.getElementById('totalSales').innerText = total.toFixed(2);
-    }
+<script>
 
-    // Auto load sales on page load
-    loadSales();
-  </script>
+async function loadSales(){
+
+const res = await fetch("http://127.0.0.1:5000/sales_report")
+
+const data = await res.json()
+
+document.getElementById("dailySales").innerText="₹"+data.daily_sales
+document.getElementById("monthlySales").innerText="₹"+data.monthly_sales
+document.getElementById("totalRevenue").innerText="₹"+data.total_revenue
+
+const table=document.getElementById("salesTable")
+table.innerHTML=""
+
+data.all_sales.forEach(sale=>{
+
+const row=document.createElement("tr")
+
+row.innerHTML=`
+<td>${sale.id}</td>
+<td>${sale.sale_date}</td>
+<td>₹${sale.total_amount}</td>
+<td><button class="viewBtn" onclick="toggle(${sale.id})">View</button></td>
+`
+
+table.appendChild(row)
+
+const detail=document.createElement("tr")
+
+detail.id="details-"+sale.id
+detail.className="detailsRow"
+
+detail.innerHTML=`
+<td colspan="4">
+
+<table class="detailsTable">
+
+<thead>
+<tr>
+<th>Medicine</th>
+<th>Batch</th>
+<th>Qty</th>
+<th>Price</th>
+<th>Amount</th>
+</tr>
+</thead>
+
+<tbody id="items-${sale.id}"></tbody>
+
+</table>
+
+</td>
+`
+
+table.appendChild(detail)
+
+})
+
+}
+
+async function toggle(id){
+
+const row = document.getElementById("details-"+id)
+
+if(row.style.display === "table-row"){
+    row.style.display = "none"
+    return
+}
+
+row.style.display = "table-row"
+
+const body = document.getElementById("items-"+id)
+
+body.innerHTML = ""   // clear old rows
+
+try{
+
+const res = await fetch("http://127.0.0.1:5000/sale_items/"+id)
+
+const items = await res.json()
+
+if(items.length === 0){
+    body.innerHTML = "<tr><td colspan='5'>No items found</td></tr>"
+    return
+}
+
+items.forEach(item => {
+
+body.innerHTML += `
+<tr>
+<td>${item.medicine_name}</td>
+<td>${item.batch}</td>
+<td>${item.quantity}</td>
+<td>₹${item.price}</td>
+<td>₹${item.amount}</td>
+</tr>
+`
+
+})
+
+}catch(err){
+
+body.innerHTML = "<tr><td colspan='5'>Error loading items</td></tr>"
+
+}
+
+}
+
+loadSales()
+
+</script>
+
 </body>
 </html>

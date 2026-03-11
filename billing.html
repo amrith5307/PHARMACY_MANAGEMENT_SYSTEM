@@ -1,226 +1,315 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8" />
-  <title>Billing - Pharmacy</title>
-  <link rel="stylesheet" href="style.css" />
+<meta charset="UTF-8">
+<title>Billing - Pharmacy</title>
+<link rel="stylesheet" href="style.css">
 
-  <!-- Tom Select CSS -->
-  <link
-    href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.bootstrap5.min.css"
-    rel="stylesheet"
-  />
+<link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+
+<style>
+
+  .ts-dropdown{
+background:#ffffff !important;
+border:1px solid #ccc;
+box-shadow:0 4px 8px rgba(0,0,0,0.15);
+z-index:9999 !important;
+}
+
+.ts-dropdown .option{
+background:#ffffff;
+}
+
+.ts-dropdown .option:hover{
+background:#f1f1f1;
+}
+
+.ts-control{
+background:#ffffff !important;
+}
+
+.ts-control{
+z-index:1000;
+}
+
+.ts-dropdown{
+z-index:9999 !important;
+}
+
+table{
+margin-bottom:40px;
+}
+
+</style>
+
 </head>
+
 <body>
-  <div class="container">
-    <div class="sidebar">
-      <h2>Pharmacy</h2>
-      <a href="dashboard.html">Dashboard</a>
-      <a href="inventory.html">Inventory / Batch</a>
-      <a href="purchase.html">Purchase</a>
-      <a href="billing.html" class="active">Billing</a>
-      <a href="stock.html">Stock Alert</a>
-      <a href="expired.html">Expired Medicines</a>
-      <a href="expiring.html">Expiring Soon</a>
-      <a href="sales.html">Sales Report</a>
-      <a href="login.html">Logout</a>
-    </div>
 
-    <div class="main">
-      <div class="topbar">
-        <button class="menu-btn" onclick="toggleSidebar()">☰</button>
-        <h1>Create New Bill</h1>
-      </div>
+<div class="container">
 
-      <form id="billingForm">
-        <label for="prescriptionId">Prescription ID (if required)</label><br />
-        <input type="text" id="prescriptionId" name="prescriptionId" /><br /><br />
+<div class="sidebar">
+<h2>Pharmacy</h2>
+<a href="dashboard.html">Dashboard</a>
+<a href="inventory.html">Inventory / Batch</a>
+<a href="purchase.html">Purchase</a>
+<a href="billing.html" class="active">Billing</a>
+<a href="stock.html">Stock Alert</a>
+<a href="expired.html">Expired Medicines</a>
+<a href="expiring.html">Expiring Soon</a>
+<a href="sales.html">Sales Report</a>
+<a href="login.html">Logout</a>
+</div>
 
-        <h3>Bill Items</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Medicine Name</th>
-              <th>Batch No</th>
-              <th>Quantity</th>
-              <th>Price per Unit (₹)</th>
-              <th>Subtotal (₹)</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="billItemsBody"></tbody>
-        </table>
+<div class="main">
 
-        <button type="button" id="addBillItemBtn">+ Add Item</button><br /><br />
+<div class="topbar">
+<button class="menu-btn" onclick="toggleSidebar()">☰</button>
+<h1>Create New Bill</h1>
+</div>
 
-        <h3>Total: ₹<span id="totalAmount">0.00</span></h3>
+<form id="billingForm">
 
-        <button type="submit">Save Bill</button>
-      </form>
-    </div>
-  </div>
+<label>Prescription ID (if required)</label><br>
+<input type="text" id="prescriptionId"><br><br>
 
-  <!-- Tom Select JS -->
-  <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
+<h3>Bill Items</h3>
 
-  <script>
-    // Sample medicines with prescription flag, price and batches
-    const medicines = [
-      { name: "Paracetamol", price: 20, prescription_required: false, batches: [{ batchNo: "P001", qty: 50, expiry: "2026-09-30" }, { batchNo: "P002", qty: 30, expiry: "2026-12-31" }] },
-      { name: "Amoxicillin", price: 50, prescription_required: true, batches: [{ batchNo: "A100", qty: 10, expiry: "2026-08-15" }, { batchNo: "A101", qty: 0, expiry: "2026-07-01" }] },
-      { name: "Ibuprofen", price: 30, prescription_required: false, batches: [{ batchNo: "I001", qty: 20, expiry: "2026-10-10" }] },
-      { name: "Morphine", price: 100, prescription_required: true, batches: [{ batchNo: "M001", qty: 5, expiry: "2026-05-05" }] }
-    ];
+<button type="button" id="addBillItemBtn">+ Add Item</button>
 
-    function toggleSidebar() {
-      document.querySelector(".sidebar").classList.toggle("collapsed");
-    }
+<table>
 
-    const addBillItemBtn = document.getElementById("addBillItemBtn");
-    const tbody = document.getElementById("billItemsBody");
-    const totalAmountSpan = document.getElementById("totalAmount");
+<thead>
+<tr>
+<th>Medicine</th>
+<th>Batch</th>
+<th>Quantity</th>
+<th>Price</th>
+<th>Subtotal</th>
+<th>Action</th>
+</tr>
+</thead>
 
-    function createMedicineSelect() {
-      const select = document.createElement("select");
-      select.name = "medicineName";
-      select.required = true;
-      select.classList.add("medicine-select");
-      const defaultOption = document.createElement("option");
-      defaultOption.value = "";
-      defaultOption.textContent = "-- Select Medicine --";
-      defaultOption.disabled = true;
-      defaultOption.selected = true;
-      select.appendChild(defaultOption);
-      medicines.forEach((med) => {
-        const option = document.createElement("option");
-        option.value = med.name;
-        option.textContent = med.name;
-        select.appendChild(option);
-      });
-      return select;
-    }
+<tbody id="billItemsBody"></tbody>
 
-    function createBatchSelect() {
-      const select = document.createElement("select");
-      select.name = "batchNo";
-      select.required = true;
-      select.classList.add("batch-select");
-      const defaultOption = document.createElement("option");
-      defaultOption.value = "";
-      defaultOption.textContent = "-- Select Batch --";
-      defaultOption.disabled = true;
-      defaultOption.selected = true;
-      select.appendChild(defaultOption);
-      return select;
-    }
+</table>
 
-    addBillItemBtn.addEventListener("click", () => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td></td>
-        <td></td>
-        <td><input type="number" name="quantity" min="1" value="1" required /></td>
-        <td><input type="number" name="price" min="0" step="0.01" value="0" required readonly /></td>
-        <td class="subtotal">0.00</td>
-        <td><button type="button" class="deleteBtn">Delete</button></td>
-      `;
+<h3>Total ₹ <span id="totalAmount">0</span></h3>
 
-      const tdMedicine = tr.querySelector("td:nth-child(1)");
-      const medicineSelect = createMedicineSelect();
-      tdMedicine.appendChild(medicineSelect);
+<button type="submit">Save Bill</button>
 
-      const tdBatch = tr.querySelector("td:nth-child(2)");
-      const batchSelect = createBatchSelect();
-      tdBatch.appendChild(batchSelect);
+</form>
 
-      tbody.appendChild(tr);
+</div>
+</div>
 
-      new TomSelect(medicineSelect, {
-        maxOptions: 50,
-        searchField: ["text"],
-        onChange: (value) => {
-          const med = medicines.find((m) => m.name === value);
-          batchSelect.innerHTML = "";
-          const defaultOption = document.createElement("option");
-          defaultOption.value = "";
-          defaultOption.textContent = "-- Select Batch --";
-          defaultOption.disabled = true;
-          defaultOption.selected = true;
-          batchSelect.appendChild(defaultOption);
-          if (med) {
-            med.batches.forEach((batch) => {
-              if (batch.qty > 0) {
-                const option = document.createElement("option");
-                option.value = batch.batchNo;
-                option.textContent = `${batch.batchNo} (Expiry: ${batch.expiry}, Qty: ${batch.qty})`;
-                option.dataset.qty = batch.qty;
-                batchSelect.appendChild(option);
-              }
-            });
-            tr.querySelector('input[name="price"]').value = med.price.toFixed(2);
-            calculateTotal();
-          }
-        },
-      });
+<script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
 
-      batchSelect.addEventListener("change", (e) => {
-        const selectedOption = e.target.selectedOptions[0];
-        const qtyAvailable = parseInt(selectedOption.dataset.qty) || 0;
-        const qtyInput = tr.querySelector('input[name="quantity"]');
-        qtyInput.max = qtyAvailable;
-        if (qtyInput.value > qtyAvailable) qtyInput.value = qtyAvailable;
-        calculateTotal();
-      });
+<script>
 
-      tr.querySelector('input[name="quantity"]').addEventListener("input", () => {
-        const qtyInput = tr.querySelector('input[name="quantity"]');
-        const maxQty = parseInt(qtyInput.max) || 999999;
-        if (qtyInput.value > maxQty) qtyInput.value = maxQty;
-        if (qtyInput.value < 1) qtyInput.value = 1;
-        calculateTotal();
-      });
+function toggleSidebar(){
+document.querySelector(".sidebar").classList.toggle("collapsed")
+}
 
-      tr.querySelector(".deleteBtn").addEventListener("click", () => {
-        tr.remove();
-        calculateTotal();
-      });
-    });
+let medicines=[]
 
-    function calculateTotal() {
-      let total = 0;
-      tbody.querySelectorAll("tr").forEach((row) => {
-        const qty = parseInt(row.querySelector('input[name="quantity"]').value) || 0;
-        const price = parseFloat(row.querySelector('input[name="price"]').value) || 0;
-        const subtotal = qty * price;
-        row.querySelector(".subtotal").innerText = subtotal.toFixed(2);
-        total += subtotal;
-      });
-      totalAmountSpan.innerText = total.toFixed(2);
-    }
+async function loadMedicines(){
 
-    document.getElementById("billingForm").addEventListener("submit", function (e) {
-      e.preventDefault();
-      const prescriptionId = document.getElementById("prescriptionId").value.trim();
-      const medicineSelects = [...document.querySelectorAll("select.medicine-select")];
-      const requiresPrescription = medicineSelects.some((select) => {
-        const medName = select.value;
-        const med = medicines.find((m) => m.name === medName);
-        return med && med.prescription_required;
-      });
+const res = await fetch("http://127.0.0.1:5000/medicines?t="+Date.now())
 
-      if (requiresPrescription && prescriptionId === "") {
-        alert("One or more medicines require a prescription. Please enter the Prescription ID.");
-        return;
-      }
+medicines = await res.json()
 
-      // Simulate saving bill
-      alert("Bill saved successfully!");
+}
 
-      // Reset form
-      this.reset();
-      tbody.innerHTML = "";
-      totalAmountSpan.innerText = "0.00";
-    });
-  </script>
+loadMedicines()
+
+const tbody=document.getElementById("billItemsBody")
+const totalSpan=document.getElementById("totalAmount")
+
+document.getElementById("addBillItemBtn").addEventListener("click",addRow)
+
+function addRow(){
+
+const tr=document.createElement("tr")
+
+tr.innerHTML=`
+<td></td>
+<td></td>
+<td><input type="number" name="quantity" value="1" min="1"></td>
+<td><input type="number" name="price" value="0" readonly></td>
+<td class="subtotal">0</td>
+<td><button type="button" class="deleteBtn">Delete</button></td>
+`
+
+const medSelect=document.createElement("select")
+medSelect.name="medicineName"
+
+const defaultOpt=document.createElement("option")
+defaultOpt.value=""
+defaultOpt.textContent="Select Medicine"
+
+medSelect.appendChild(defaultOpt)
+
+const uniqueNames=[...new Set(medicines.map(m=>m.name))]
+
+uniqueNames.forEach(name=>{
+const opt=document.createElement("option")
+opt.value=name
+opt.textContent=name
+medSelect.appendChild(opt)
+})
+
+tr.children[0].appendChild(medSelect)
+
+const batchSelect=document.createElement("select")
+batchSelect.name="batchNo"
+
+tr.children[1].appendChild(batchSelect)
+
+tbody.appendChild(tr)
+
+new TomSelect(medSelect,{maxOptions:50})
+
+medSelect.addEventListener("change",()=>{
+
+const selectedName=medSelect.value
+
+batchSelect.innerHTML=""
+
+medicines
+.filter(m=>m.name===selectedName)
+.forEach(m=>{
+
+if(m.quantity>0){
+
+const opt=document.createElement("option")
+
+opt.value=m.batch
+opt.textContent=m.batch+" (Qty:"+m.quantity+")"
+
+batchSelect.appendChild(opt)
+
+}
+
+})
+
+const med=medicines.find(m=>m.name===selectedName)
+
+if(med){
+tr.querySelector('input[name="price"]').value=med.price
+}
+
+calculateTotal()
+
+})
+
+tr.querySelector('input[name="quantity"]').addEventListener("input",calculateTotal)
+
+tr.querySelector(".deleteBtn").addEventListener("click",()=>{
+tr.remove()
+calculateTotal()
+})
+
+}
+
+function calculateTotal(){
+
+let total=0
+
+tbody.querySelectorAll("tr").forEach(row=>{
+
+const qty=parseInt(row.querySelector('input[name="quantity"]').value)||0
+const price=parseFloat(row.querySelector('input[name="price"]').value)||0
+
+const subtotal=qty*price
+
+row.querySelector(".subtotal").innerText=subtotal
+
+total+=subtotal
+
+})
+
+totalSpan.innerText=total
+
+}
+
+document.getElementById("billingForm").addEventListener("submit",async function(e){
+
+e.preventDefault()
+
+const prescriptionId=document.getElementById("prescriptionId").value
+
+const items=[]
+
+tbody.querySelectorAll("tr").forEach(row=>{
+
+const name=row.querySelector('select[name="medicineName"]').value
+const batch=row.querySelector('select[name="batchNo"]').value
+const quantity=parseInt(row.querySelector('input[name="quantity"]').value)
+
+if(name && batch && quantity>0){
+
+items.push({
+name:name,
+batch:batch,
+quantity:quantity
+})
+
+}
+
+})
+
+if(items.length===0){
+alert("Please add at least one valid medicine.")
+return
+}
+
+try{
+
+const res=await fetch("http://127.0.0.1:5000/sell",{
+
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+prescription_id:prescriptionId,
+items:items
+})
+
+})
+
+const result=await res.json()
+
+if(res.ok){
+
+alert("Sale completed! Total ₹"+result.total)
+
+tbody.innerHTML=""
+totalSpan.innerText="0"
+document.getElementById("billingForm").reset()
+
+await loadMedicines()
+
+}
+else{
+
+alert(result.error)
+
+}
+
+}
+catch(err){
+
+alert("Server Error")
+
+}
+
+})
+
+</script>
+
 </body>
 </html>
