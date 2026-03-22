@@ -10,31 +10,15 @@
 
 <style>
 
-  .ts-dropdown{
+.ts-dropdown{
 background:#ffffff !important;
 border:1px solid #ccc;
 box-shadow:0 4px 8px rgba(0,0,0,0.15);
 z-index:9999 !important;
 }
 
-.ts-dropdown .option{
-background:#ffffff;
-}
-
 .ts-dropdown .option:hover{
 background:#f1f1f1;
-}
-
-.ts-control{
-background:#ffffff !important;
-}
-
-.ts-control{
-z-index:1000;
-}
-
-.ts-dropdown{
-z-index:9999 !important;
 }
 
 table{
@@ -64,28 +48,24 @@ margin-bottom:40px;
 
 <div class="main">
 
-<div class="topbar">
-<button class="menu-btn" onclick="toggleSidebar()">☰</button>
 <h1>Create New Bill</h1>
-</div>
 
 <form id="billingForm">
 
-<label>Prescription ID (if required)</label><br>
+<label>Prescription ID</label><br>
 <input type="text" id="prescriptionId"><br><br>
 
 <h3>Bill Items</h3>
 
 <button type="button" id="addBillItemBtn">+ Add Item</button>
 
-<table>
-
+<table border="1" width="100%">
 <thead>
 <tr>
 <th>Medicine</th>
 <th>Batch</th>
 <th>Quantity</th>
-<th>Price</th>
+<th>Selling Price</th>
 <th>Subtotal</th>
 <th>Action</th>
 </tr>
@@ -108,18 +88,11 @@ margin-bottom:40px;
 
 <script>
 
-function toggleSidebar(){
-document.querySelector(".sidebar").classList.toggle("collapsed")
-}
-
 let medicines=[]
 
 async function loadMedicines(){
-
-const res = await fetch("http://127.0.0.1:5000/medicines?t="+Date.now())
-
+const res = await fetch("http://127.0.0.1:5000/medicines")
 medicines = await res.json()
-
 }
 
 loadMedicines()
@@ -136,14 +109,13 @@ const tr=document.createElement("tr")
 tr.innerHTML=`
 <td></td>
 <td></td>
-<td><input type="number" name="quantity" value="1" min="1"></td>
-<td><input type="number" name="price" value="0" readonly></td>
+<td><input type="number" value="1" min="1"></td>
+<td><input type="number" value="0" min="0"></td>
 <td class="subtotal">0</td>
-<td><button type="button" class="deleteBtn">Delete</button></td>
+<td><button type="button">Delete</button></td>
 `
 
 const medSelect=document.createElement("select")
-medSelect.name="medicineName"
 
 const defaultOpt=document.createElement("option")
 defaultOpt.value=""
@@ -163,50 +135,37 @@ medSelect.appendChild(opt)
 tr.children[0].appendChild(medSelect)
 
 const batchSelect=document.createElement("select")
-batchSelect.name="batchNo"
-
 tr.children[1].appendChild(batchSelect)
 
 tbody.appendChild(tr)
 
-new TomSelect(medSelect,{maxOptions:50})
+new TomSelect(medSelect)
 
 medSelect.addEventListener("change",()=>{
 
 const selectedName=medSelect.value
-
 batchSelect.innerHTML=""
 
 medicines
 .filter(m=>m.name===selectedName)
 .forEach(m=>{
-
 if(m.quantity>0){
-
 const opt=document.createElement("option")
-
 opt.value=m.batch
 opt.textContent=m.batch+" (Qty:"+m.quantity+")"
-
 batchSelect.appendChild(opt)
-
 }
-
 })
-
-const med=medicines.find(m=>m.name===selectedName)
-
-if(med){
-tr.querySelector('input[name="price"]').value=med.price
-}
 
 calculateTotal()
 
 })
 
-tr.querySelector('input[name="quantity"]').addEventListener("input",calculateTotal)
+tr.querySelectorAll("input").forEach(inp=>{
+inp.addEventListener("input",calculateTotal)
+})
 
-tr.querySelector(".deleteBtn").addEventListener("click",()=>{
+tr.querySelector("button").addEventListener("click",()=>{
 tr.remove()
 calculateTotal()
 })
@@ -219,8 +178,8 @@ let total=0
 
 tbody.querySelectorAll("tr").forEach(row=>{
 
-const qty=parseInt(row.querySelector('input[name="quantity"]').value)||0
-const price=parseFloat(row.querySelector('input[name="price"]').value)||0
+const qty=parseInt(row.children[2].querySelector("input").value)||0
+const price=parseFloat(row.children[3].querySelector("input").value)||0
 
 const subtotal=qty*price
 
@@ -238,73 +197,41 @@ document.getElementById("billingForm").addEventListener("submit",async function(
 
 e.preventDefault()
 
-const prescriptionId=document.getElementById("prescriptionId").value
-
 const items=[]
 
 tbody.querySelectorAll("tr").forEach(row=>{
 
-const name=row.querySelector('select[name="medicineName"]').value
-const batch=row.querySelector('select[name="batchNo"]').value
-const quantity=parseInt(row.querySelector('input[name="quantity"]').value)
+const name=row.children[0].querySelector("select").value
+const batch=row.children[1].querySelector("select").value
+const quantity=parseInt(row.children[2].querySelector("input").value)
+const price=parseFloat(row.children[3].querySelector("input").value)
 
 if(name && batch && quantity>0){
 
 items.push({
 name:name,
 batch:batch,
-quantity:quantity
+quantity:quantity,
+price:price
 })
 
 }
 
 })
-
-if(items.length===0){
-alert("Please add at least one valid medicine.")
-return
-}
-
-try{
 
 const res=await fetch("http://127.0.0.1:5000/sell",{
-
 method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-
-body:JSON.stringify({
-prescription_id:prescriptionId,
-items:items
-})
-
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({items:items})
 })
 
 const result=await res.json()
 
 if(res.ok){
-
-alert("Sale completed! Total ₹"+result.total)
-
-tbody.innerHTML=""
-totalSpan.innerText="0"
-document.getElementById("billingForm").reset()
-
-await loadMedicines()
-
-}
-else{
-
+alert("Total ₹"+result.total)
+location.reload()
+}else{
 alert(result.error)
-
-}
-
-}
-catch(err){
-
-alert("Server Error")
-
 }
 
 })
